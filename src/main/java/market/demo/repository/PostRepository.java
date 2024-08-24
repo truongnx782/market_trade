@@ -13,11 +13,12 @@ import java.util.Optional;
 public interface PostRepository extends JpaRepository<Post,Long> {
     @Query(value = "SELECT u FROM Post u WHERE " +
             "(u.title LIKE %:search% OR u.description LIKE %:search% ) " +
-            "AND (:status IS NULL OR u.status = :status) " +
+            "AND (:status IS NULL OR u.status = :status and u.userId=:uid) " +
             "ORDER BY u.id DESC")
     Page<Post> search(@Param("search") String search,
                          @Param("status") Integer status,
-                         Pageable pageable);
+                         Pageable pageable,
+                        @Param("uid")Long uid);
 
     List<Post> findAllByUserId(Long userId);
 
@@ -25,5 +26,5 @@ public interface PostRepository extends JpaRepository<Post,Long> {
             "p.id = (SELECT MAX(p2.id) FROM Post p2 ) " )
     Optional<Post> findMaxId();
 
-    List<Post> findAllByStatus(int status);
+    List<Post> findTop20ByStatusOrderByCreatedAtDesc(Integer active);
 }

@@ -23,6 +23,9 @@ public class Image {
     @Column(name = "Url", nullable = false)
     private String url;
 
+    @Column(name = "State",nullable = false)
+    private Integer state;
+
     @Column(name = "Status", nullable = false)
     private Integer status;
 }
