@@ -9,5 +9,10 @@ public class Utils {
         public static  Integer MAIN=1;
         public static  Integer EXTRA=0;
     }
+    public static class StatusPost{
+        public static  Integer ACTIVE=1;
+        public static  Integer WAIT=2;
+        public static  Integer IN_ACTIVE=0;
+    }
 
 }

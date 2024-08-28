@@ -10,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 import market.demo.base.BaseDTO;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -27,4 +28,19 @@ public class PostDTO extends BaseDTO {
     private Long categoryId;
     private int statusPost;
     private int status;
+
+    public static void validate(PostDTO postDTO){
+        if(postDTO.getDescription() == null || postDTO.getDescription().isEmpty()){
+            throw  new IllegalArgumentException("description cannot be empty");
+        }
+        if(postDTO.getPrice() == null){
+            throw  new IllegalArgumentException("price cannot be empty");
+        }
+        if(postDTO.getLocation() == null || postDTO.getLocation().isEmpty()){
+            throw  new IllegalArgumentException("location cannot be empty");
+        }
+        if (postDTO.getCategoryId() == null) {
+            throw new IllegalArgumentException("categoryId  cannot be empty");
+        }
+    }
 }

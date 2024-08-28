@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import market.demo.base.BaseDTO;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -16,8 +17,11 @@ public class PostResponse extends BaseDTO {
     private String postCode;
     private String title;
     private String description;
+    private BigDecimal price;
     private Long userId;
     private String imageUrl ;
+    private String location;
+    private String phoneNumber;
     private int statusPost;
     private int status;
 }
