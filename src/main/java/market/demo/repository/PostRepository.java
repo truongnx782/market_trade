@@ -10,15 +10,17 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface PostRepository extends JpaRepository<Post,Long> {
+public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query(value = "SELECT u FROM Post u WHERE " +
             "(u.title LIKE %:search% OR u.description LIKE %:search% ) " +
             "AND (:statusPost IS NULL OR u.statusPost = :statusPost) " +
+            "AND (:categoryId IS NULL OR u.categoryId = :categoryId) " +
             "ORDER BY u.id DESC")
     Page<Post> search(@Param("search") String search,
                       @Param("statusPost") Integer statusPost,
-                           Pageable pageable);
+                      @Param("categoryId") Long categoryId,
+                      Pageable pageable);
 
     @Query(value = "SELECT u FROM Post u WHERE " +
             "(u.title LIKE %:search% OR u.description LIKE %:search% ) " +
@@ -31,9 +33,10 @@ public interface PostRepository extends JpaRepository<Post,Long> {
                            @Param("uid") Long uid);
 
     @Query(value = "SELECT p FROM Post p WHERE " +
-            "p.id = (SELECT MAX(p2.id) FROM Post p2 ) " )
+            "p.id = (SELECT MAX(p2.id) FROM Post p2 ) ")
     Optional<Post> findMaxId();
 
     List<Post> findTop20ByStatusAndStatusPostOrderByCreatedAtDesc(Integer ACTIVE, Integer active);
 
+    List<Post> findAllByUserId(Long userId);
 }

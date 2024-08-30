@@ -30,14 +30,14 @@ public class PostService {
     private final Market_authClient market_authClient;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-
     public Page<PostDTO> search(Map<String, Object> payload) {
         int page = (int) payload.getOrDefault("page", 0);
         int size = (int) payload.getOrDefault("size", 5);
         String search = (String) payload.getOrDefault("search", "");
         Integer statusPost = (Integer) payload.getOrDefault("statusPost", null);
+        Long categoryId = Long.valueOf(payload.getOrDefault("categoryId",null).toString());
         Pageable pageable = PageRequest.of(page, size);
-        Page<Post> data = postRepository.search(search, statusPost, pageable);
+        Page<Post> data = postRepository.search(search, statusPost,categoryId, pageable);
         return data.map(Post::toDTO);
     }
 
@@ -69,13 +69,24 @@ public class PostService {
         return postResponses;
     }
 
-    public Page<PostResponse> searchPostList(Map<String, Object> payload, Long uid) {
+    public Page<PostDTO> searchByUid(Map<String,Object> payload,Long userId) {
         int page = (int) payload.getOrDefault("page", 0);
         int size = (int) payload.getOrDefault("size", 5);
         String search = (String) payload.getOrDefault("search", "");
-        Integer statusPost = (Integer) payload.getOrDefault("statusPost", null);
+        Integer status = (Integer) payload.getOrDefault("status", null);
         Pageable pageable = PageRequest.of(page, size);
-        Page<Post> data = postRepository.search(search, statusPost, pageable);
+        Page<Post> data = postRepository.searchByUid(search,status,pageable,userId);
+        return data.map(Post::toDTO);
+    }
+
+    public Page<PostResponse> searchPostList(Map<String, Object> payload) {
+        int page = (int) payload.getOrDefault("page", 0);
+        int size = (int) payload.getOrDefault("size", 5);
+        String search = (String) payload.getOrDefault("search", "");
+        Integer statusPost = (Integer) payload.getOrDefault("statusPost", Utils.StatusPost.ACTIVE);
+        Long categoryId = payload.get("categoryId") != null ? Long.valueOf(payload.get("categoryId").toString()) : null;
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Post> data = postRepository.search(search, statusPost, categoryId,pageable);
 
         List<Image> images = imageRepository.findAllByStatus(Utils.Status.ACTIVE);
         List<Long>userIds = data.stream().map(x->x.getUserId()).collect(Collectors.toList());
