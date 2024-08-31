@@ -19,20 +19,20 @@ public class PostController {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @PostMapping("/search")
-    public ResponseEntity<?> searchPostList(@RequestBody Map<String, Object> payload) {
-        return ResponseEntity.ok(postService.searchPostList(payload));
+    public ResponseEntity<?> searchPost(@RequestBody Map<String, Object> payload) {
+        return ResponseEntity.ok(postService.searchPost(payload));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/search")
-    public ResponseEntity<?> search(@RequestBody Map<String, Object> payload) {
-        return ResponseEntity.ok(postService.search(payload));
+    public ResponseEntity<?> searchPostByAdmin(@RequestBody Map<String, Object> payload) {
+        return ResponseEntity.ok(postService.searchPostByAdmin(payload));
     }
 
     @PostMapping("/search-by-uid")
-    public ResponseEntity<?> searchByUid(@RequestHeader("uid") Long uid,
+    public ResponseEntity<?> searchPostByUid(@RequestHeader("uid") Long uid,
                                          @RequestBody Map<String, Object> payload) {
-        return ResponseEntity.ok(postService.searchByUid(payload,uid));
+        return ResponseEntity.ok(postService.searchPostByUid(payload,uid));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
