@@ -19,9 +19,8 @@ public class CategoryController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/search")
-    public ResponseEntity<?> search(@RequestHeader("uid") Long uid,
-                                    @RequestBody Map<String, Object> payload) {
-        return ResponseEntity.ok(categoryRepository.search(payload, uid));
+    public ResponseEntity<?> search(@RequestBody Map<String, Object> payload) {
+        return ResponseEntity.ok(categoryRepository.search(payload));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -77,9 +76,8 @@ public class CategoryController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/export")
-    public ResponseEntity<?> export(@RequestHeader("uid") Long uid,
-                                    @RequestBody Map<String, Object> payload) {
-        return ResponseEntity.ok(categoryRepository.exportData(payload, uid));
+    public ResponseEntity<?> export(@RequestBody Map<String, Object> payload) {
+        return ResponseEntity.ok(categoryRepository.exportData(payload));
     }
 
     @GetMapping("getAll")

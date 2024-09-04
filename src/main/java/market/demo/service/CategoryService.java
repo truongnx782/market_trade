@@ -31,7 +31,7 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final Cloudinary cloudinary;
 
-    public Page<CategoryDTO> search(Map<String, Object> payload, Long uid) {
+    public Page<CategoryDTO> search(Map<String, Object> payload) {
         int page = (int) payload.getOrDefault("page", 0);
         int size = (int) payload.getOrDefault("size", 5);
         String search = (String) payload.getOrDefault("search", "");
@@ -203,7 +203,7 @@ public class CategoryService {
         }
     }
 
-    public byte[] exportData(Map<String, Object> payload, Long cid) {
+    public byte[] exportData(Map<String, Object> payload) {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Data");
             // Create header row
@@ -213,7 +213,7 @@ public class CategoryService {
             header.createCell(2).setCellValue("Status");
 
             // Fetch data
-            Page<CategoryDTO> categoryDTOs = search(payload, cid);
+            Page<CategoryDTO> categoryDTOs = search(payload);
             List<Category> categories = categoryDTOs.stream()
                     .map(Category::toEntity)
                     .collect(Collectors.toList());

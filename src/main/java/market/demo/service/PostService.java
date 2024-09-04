@@ -3,14 +3,18 @@ package market.demo.service;
 import lombok.RequiredArgsConstructor;
 import market.demo.Util.MapperUtils;
 import market.demo.Util.Utils;
+import market.demo.dto.CategoryDTO;
 import market.demo.dto.PostDTO;
 import market.demo.dto.UserDTO;
 import market.demo.dto.response.PostResponse;
+import market.demo.entity.Category;
 import market.demo.entity.Image;
 import market.demo.entity.Post;
 import market.demo.repository.ImageRepository;
 import market.demo.repository.PostRepository;
 import market.demo.repository.httpClient.Market_authClient;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +22,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,10 +40,11 @@ public class PostService {
         int page = (int) payload.getOrDefault("page", 0);
         int size = (int) payload.getOrDefault("size", 5);
         String search = (String) payload.getOrDefault("search", "");
-        Integer statusPost = payload.get("categoryId") != null ? Integer.valueOf(payload.get("statusPoststatusPost").toString()) : null;
+        Integer statusPost = payload.get("statusPost") != null ? Integer.valueOf(payload.get("statusPost").toString()) : null;
         Pageable pageable = PageRequest.of(page, size);
         Page<Post> data = postRepository.searchPostByAdmin(search, statusPost, pageable);
         return data.map(Post::toDTO);
+
     }
 
     public List<?> getAllByStatusActive() {
@@ -202,5 +209,57 @@ public class PostService {
         return Post.toDTO(post);
     }
 
+    public byte[] exportData(Map<String, Object> payload) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Data");
+            // Create header row
+            Row header = sheet.createRow(0);
+            header.createCell(0).setCellValue("Code");
+            header.createCell(1).setCellValue("Title");
+            header.createCell(2).setCellValue("Description");
+            header.createCell(3).setCellValue("Price");
+            header.createCell(4).setCellValue("Location");
+            header.createCell(5).setCellValue("UserId");
+            header.createCell(6).setCellValue("CategoryId");
+            header.createCell(7).setCellValue("StatusPost");
+            header.createCell(8).setCellValue("Status");
+
+
+            // Fetch data
+            Page<PostDTO> postDTOS = searchPostByAdmin(payload);
+            List<Post> posts = postDTOS.stream()
+                    .map(Post::toEntity)
+                    .collect(Collectors.toList());
+
+            // Write data to sheet
+            int rowIndex = 1;
+            for (Post p : posts) {
+                Row row = sheet.createRow(rowIndex++);
+                row.createCell(0).setCellValue(p.getPostCode());
+                row.createCell(1).setCellValue(p.getTitle());
+                row.createCell(2).setCellValue(p.getDescription());
+                row.createCell(3).setCellValue(p.getPrice().toString());
+                row.createCell(4).setCellValue(p.getLocation());
+                row.createCell(5).setCellValue(p.getUserId());
+                row.createCell(6).setCellValue(p.getCategoryId());
+                row.createCell(6).setCellValue(p.getStatusPost());
+                row.createCell(7).setCellValue(p.getStatus());
+            }
+            // Tạo CellStyle với định dạng text
+            DataFormat format = workbook.createDataFormat();
+            CellStyle textStyle = workbook.createCellStyle();
+            textStyle.setDataFormat(format.getFormat("@")); // "@" là định dạng cho text
+
+            // Áp dụng định dạng text cho tất cả các cột
+            for (int i = 0; i < 8; i++) {
+                sheet.setDefaultColumnStyle(i, textStyle);
+            }
+
+            workbook.write(baos);
+            return baos.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to export data", e);
+        }
+    }
 
 }
