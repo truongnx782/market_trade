@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import market.demo.dto.PostDTO;
 import market.demo.service.PostService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +15,6 @@ import java.util.Map;
 public class PostController {
 
     private final PostService postService;
-    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @PostMapping("/search")
     public ResponseEntity<?> searchPost(@RequestBody Map<String, Object> payload) {
@@ -74,5 +72,11 @@ public class PostController {
     public ResponseEntity<?> restore(@RequestHeader("uid") Long uid,
                                      @PathVariable("id") Long id) {
         return ResponseEntity.ok(postService.restore(id, uid));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/export")
+    public ResponseEntity<?> export(@RequestBody Map<String, Object> payload) {
+        return ResponseEntity.ok(postService.exportData(payload));
     }
 }
