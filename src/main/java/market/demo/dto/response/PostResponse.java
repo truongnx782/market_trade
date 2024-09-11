@@ -8,6 +8,7 @@ import market.demo.base.BaseDTO;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -19,7 +20,7 @@ public class PostResponse extends BaseDTO {
     private String description;
     private BigDecimal price;
     private Long userId;
-    private String imageUrl ;
+    private List<String> imageUrls ;
     private String location;
     private String phoneNumber;
     private int statusPost;

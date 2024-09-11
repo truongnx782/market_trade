@@ -64,12 +64,14 @@ public class PostService {
                 }
             }
 
+            List<String> imageURLs = new ArrayList<>();
             for (Image image : images) {
-                if (post.getId().equals(image.getPostId()) && image.getState().equals(Utils.StateImage.MAIN)) {
-                    postResponse.setImageUrl(image.getUrl());
-                    break;
+                if (post.getId().equals(image.getPostId())) {
+                    imageURLs.add(image.getUrl());
                 }
             }
+            postResponse.setImageUrls(imageURLs);
+
             postResponses.add(postResponse);
         }
         return postResponses;
@@ -109,12 +111,13 @@ public class PostService {
                 }
             }
 
+            List<String> imageURLs = new ArrayList<>();
             for (Image image : images) {
-                if (post.getId().equals(image.getPostId()) && image.getState().equals(Utils.StateImage.MAIN)) {
-                    postResponse.setImageUrl(image.getUrl());
-                    break;
+                if (post.getId().equals(image.getPostId())) {
+                    imageURLs.add(image.getUrl());
                 }
             }
+            postResponse.setImageUrls(imageURLs);
             postResponses.add(postResponse);
         }
         return new PageImpl<>(postResponses, pageable, data.getTotalElements());
