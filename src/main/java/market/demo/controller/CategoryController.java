@@ -83,7 +83,7 @@ public class CategoryController {
         return ResponseEntity.ok(categoryRepository.exportData(payload));
     }
 
-    @GetMapping("getAll")
+    @GetMapping("/getAll")
     public ResponseEntity<?> getAll() {
         return ResponseEntity.ok(categoryRepository.getAll());
     }

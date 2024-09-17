@@ -44,6 +44,12 @@ public class PostController {
         return ResponseEntity.ok(postService.getAllByStatusActive());
     }
 
+    @PostMapping("/getAllByFollowerId")
+    public ResponseEntity<?> getAllByFollowerId(@RequestHeader("uid") Long uid,
+                                                @RequestBody Map<String, Object> payload) {
+        return ResponseEntity.ok(postService.getAllByFollowerId(payload,uid));
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/admin/change-status-post")
     public ResponseEntity<?> changeStatusPost(@RequestBody Map<String, Object> payload) {

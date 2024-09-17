@@ -56,4 +56,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     List<Post> findTop20ByStatusAndStatusPostOrderByCreatedAtDesc(Integer ACTIVE, Integer active);
 
-}
+    @Query(value = "SELECT u FROM Post u left join Follow f on u.userId=f.followingId where " +
+            "f.followerId=:uid " +
+            "and (u.title like %:search% or u.description like %:search% ) " +
+            "and u.status = 1 " +
+            "and u.statusPost= 1 " +
+            "order by u.id desc ")
+    Page<Post> getAllByFollowerId(@Param("search") String search,
+                                  Pageable pageable,
+                                  @Param("uid") Long uid);}

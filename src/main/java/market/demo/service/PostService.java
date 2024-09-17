@@ -45,13 +45,6 @@ public class PostService {
 
     }
 
-    public List<PostResponse>  getAllByStatusActive() {
-        List<Post> data = postRepository.findTop20ByStatusAndStatusPostOrderByCreatedAtDesc(Utils.Status.ACTIVE,Utils.StatusPost.ACTIVE);
-        Page<Post> pageData = new PageImpl<>(data);
-
-        List<PostResponse> postResponses = createPostResponse(pageData);
-        return postResponses;
-    }
 
     public List<PostResponse>  createPostResponse(Page<Post> data){
         List<Image> images = imageRepository.findAllByStatus(Utils.Status.ACTIVE);
@@ -80,6 +73,25 @@ public class PostService {
             postResponses.add(postResponse);
         }
         return postResponses;
+    }
+
+    public List<PostResponse>  getAllByStatusActive() {
+        List<Post> data = postRepository.findTop20ByStatusAndStatusPostOrderByCreatedAtDesc(Utils.Status.ACTIVE,Utils.StatusPost.ACTIVE);
+        Page<Post> pageData = new PageImpl<>(data);
+
+        List<PostResponse> postResponses = createPostResponse(pageData);
+        return postResponses;
+    }
+
+    public Page<PostResponse>  getAllByFollowerId(Map<String,Object> payload,Long uid) {
+        int page = (int) payload.getOrDefault("page", 0);
+        int size = (int) payload.getOrDefault("size", 5);
+        String search = (String) payload.getOrDefault("search", "");
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Post> data = postRepository.getAllByFollowerId(search,pageable,uid);
+
+        List<PostResponse> postResponses = createPostResponse(data);
+        return new PageImpl<>(postResponses, pageable, data.getTotalElements());
     }
 
     public Page<PostDTO> searchPostByUid(Map<String,Object> payload,Long userId) {
