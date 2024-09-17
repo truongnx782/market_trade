@@ -3,11 +3,9 @@ package market.demo.service;
 import lombok.RequiredArgsConstructor;
 import market.demo.Util.MapperUtils;
 import market.demo.Util.Utils;
-import market.demo.dto.CategoryDTO;
 import market.demo.dto.PostDTO;
 import market.demo.dto.UserDTO;
 import market.demo.dto.response.PostResponse;
-import market.demo.entity.Category;
 import market.demo.entity.Image;
 import market.demo.entity.Post;
 import market.demo.repository.ImageRepository;
@@ -47,19 +45,27 @@ public class PostService {
 
     }
 
-    public List<?> getAllByStatusActive() {
-        List<Post> posts = postRepository.findTop20ByStatusAndStatusPostOrderByCreatedAtDesc(Utils.Status.ACTIVE,Utils.StatusPost.ACTIVE);
+    public List<PostResponse>  getAllByStatusActive() {
+        List<Post> data = postRepository.findTop20ByStatusAndStatusPostOrderByCreatedAtDesc(Utils.Status.ACTIVE,Utils.StatusPost.ACTIVE);
+        Page<Post> pageData = new PageImpl<>(data);
+
+        List<PostResponse> postResponses = createPostResponse(pageData);
+        return postResponses;
+    }
+
+    public List<PostResponse>  createPostResponse(Page<Post> data){
         List<Image> images = imageRepository.findAllByStatus(Utils.Status.ACTIVE);
-        List<Long>userIds = posts.stream().map(x->x.getUserId()).collect(Collectors.toList());
+        List<Long>userIds = data.stream().map(x->x.getUserId()).collect(Collectors.toList());
         List<UserDTO> userDTOS =market_authClient.getAllUserById(userIds);
         List<PostResponse> postResponses = new ArrayList<>();
 
-        for (Post post : posts) {
+        for (Post post : data) {
             PostResponse postResponse = MapperUtils.mapCommonFields(post, PostResponse.class);
 
             for (UserDTO userDTO: userDTOS){
                 if(userDTO.getId().equals(post.getUserId())){
                     postResponse.setPhoneNumber(userDTO.getPhoneNumber());
+                    postResponse.setFullNameUser(userDTO.getFullName());
                     break;
                 }
             }
@@ -71,7 +77,6 @@ public class PostService {
                 }
             }
             postResponse.setImageUrls(imageURLs);
-
             postResponses.add(postResponse);
         }
         return postResponses;
@@ -87,6 +92,17 @@ public class PostService {
         return data.map(Post::toDTO);
     }
 
+    public Page<PostResponse> searchPostByIdUser(Long id,Map<String,Object> payload) {
+        int page = (int) payload.getOrDefault("page", 0);
+        int size = (int) payload.getOrDefault("size", 5);
+        String search = (String) payload.getOrDefault("search", "");
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Post> data = postRepository.searchPostByIdUser(search,pageable,id);
+
+        List<PostResponse> postResponses = createPostResponse(data);
+        return new PageImpl<>(postResponses, pageable, data.getTotalElements());
+    }
+
     public Page<PostResponse> searchPost(Map<String, Object> payload) {
         int page = (int) payload.getOrDefault("page", 0);
         int size = (int) payload.getOrDefault("size", 5);
@@ -96,30 +112,7 @@ public class PostService {
         Pageable pageable = PageRequest.of(page, size);
         Page<Post> data = postRepository.searchPost(search, statusPost, categoryId,pageable);
 
-        List<Image> images = imageRepository.findAllByStatus(Utils.Status.ACTIVE);
-        List<Long>userIds = data.stream().map(x->x.getUserId()).collect(Collectors.toList());
-        List<UserDTO> userDTOS =market_authClient.getAllUserById(userIds);
-        List<PostResponse> postResponses = new ArrayList<>();
-
-        for (Post post : data) {
-            PostResponse postResponse = MapperUtils.mapCommonFields(post, PostResponse.class);
-
-            for (UserDTO userDTO: userDTOS){
-                if(userDTO.getId().equals(post.getUserId())){
-                    postResponse.setPhoneNumber(userDTO.getPhoneNumber());
-                    break;
-                }
-            }
-
-            List<String> imageURLs = new ArrayList<>();
-            for (Image image : images) {
-                if (post.getId().equals(image.getPostId())) {
-                    imageURLs.add(image.getUrl());
-                }
-            }
-            postResponse.setImageUrls(imageURLs);
-            postResponses.add(postResponse);
-        }
+        List<PostResponse> postResponses = createPostResponse(data);
         return new PageImpl<>(postResponses, pageable, data.getTotalElements());
 
     }
@@ -147,7 +140,7 @@ public class PostService {
     public PostDTO update(Long id, PostDTO postDTO, Long uid) {
         PostDTO.validate(postDTO);
         Optional<Post> postOptional = postRepository.findById(id);
-        if (!postOptional.isPresent()) {
+        if (postOptional.isEmpty()) {
             throw new IllegalArgumentException("Post not found");
         }
 
@@ -202,7 +195,7 @@ public class PostService {
         objectMap.put("id",post.getUserId());
         Map<String,Object>userMaper =market_authClient.getUserById(objectMap);
 
-        String message = status == Utils.StatusPost.IN_ACTIVE
+        String message = status.equals(Utils.StatusPost.IN_ACTIVE)
                 ? " đã bị từ chối" : " đã được phê duyệt";
         userMaper.put("message",message);
         userMaper.put("title",post.getTitle());

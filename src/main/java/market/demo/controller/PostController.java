@@ -29,19 +29,25 @@ public class PostController {
 
     @PostMapping("/search-by-uid")
     public ResponseEntity<?> searchPostByUid(@RequestHeader("uid") Long uid,
-                                         @RequestBody Map<String, Object> payload) {
+                                             @RequestBody Map<String, Object> payload) {
         return ResponseEntity.ok(postService.searchPostByUid(payload,uid));
+    }
+
+    @PostMapping("/search-by-id-user/{id}")
+    public ResponseEntity<?> searchPostByIdUser(@PathVariable("id")Long id,
+                                         @RequestBody Map<String, Object> payload) {
+        return ResponseEntity.ok(postService.searchPostByIdUser(id,payload));
+    }
+
+    @GetMapping("/getAll")
+    public ResponseEntity<?> getAllByStatusActive() {
+        return ResponseEntity.ok(postService.getAllByStatusActive());
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/admin/change-status-post")
     public ResponseEntity<?> changeStatusPost(@RequestBody Map<String, Object> payload) {
         return ResponseEntity.ok(postService.changeStatusPost(payload));
-    }
-
-    @GetMapping("/getAll")
-    public ResponseEntity<?> getAllByStatusActive() {
-        return ResponseEntity.ok(postService.getAllByStatusActive());
     }
 
     @PostMapping("/create")

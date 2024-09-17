@@ -36,6 +36,7 @@ public class ImageService {
                     image.setPostId(postId);
                     image.setUrl((String) r.get("secure_url"));
                     image.setStatus(Utils.Status.ACTIVE);
+                    image.setState(Utils.StateImage.EXTRA);
                     image.setCreateBy(uid);
                     image.setCreatedAt(LocalDateTime.now());
                     finalListImage.add(image);

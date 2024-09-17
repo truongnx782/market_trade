@@ -22,6 +22,7 @@ public class PostResponse extends BaseDTO {
     private Long userId;
     private List<String> imageUrls ;
     private String location;
+    private String fullNameUser;
     private String phoneNumber;
     private int statusPost;
     private int status;
