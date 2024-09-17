@@ -19,9 +19,9 @@ public class ImageController {
     public ResponseEntity<?> create(
             @RequestHeader("uid") Long uid,
             @RequestParam(value = "file", required = false) List<MultipartFile> file,
-            @RequestParam(value = "image", required = false) List<Long> images,
+            @RequestParam(value = "url", required = false) List <String> urls,
             @RequestParam("postId") Long postId) throws IOException {
-        return ResponseEntity.ok(imageService.create(file, images, postId, uid));
+        return ResponseEntity.ok(imageService.create(file, urls, postId, uid));
     }
 
     @GetMapping("/get-by-post-id/{id}")

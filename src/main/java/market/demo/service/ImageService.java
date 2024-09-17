@@ -15,8 +15,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,7 +25,7 @@ public class ImageService {
     private final Cloudinary cloudinary;
 
 
-    public List<ImageDTO> create(List<MultipartFile> files, List<Long> images, Long postId, Long uid) throws IOException {
+    public List<ImageDTO> create(List<MultipartFile> files, List<String> urls, Long postId, Long uid) throws IOException {
         List<Image> listImage = new ArrayList<>();
         if (files != null) {
             List<Image> finalListImage = listImage;
@@ -38,7 +36,7 @@ public class ImageService {
                     image.setPostId(postId);
                     image.setUrl((String) r.get("secure_url"));
                     image.setStatus(Utils.Status.ACTIVE);
-                    image.setState(Utils.StateImage.MAIN);
+                    image.setState(Utils.StateImage.EXTRA);
                     image.setCreateBy(uid);
                     image.setCreatedAt(LocalDateTime.now());
                     finalListImage.add(image);
@@ -49,22 +47,22 @@ public class ImageService {
         }
 
         List<Image> imagesRepo = imageRepositoty.findAllByPostId(postId);
-        List<Long> imageRemove;
+        List<Long> imageRemove = new ArrayList<>();
 
-        if (images == null) {
-            imageRemove = imagesRepo.stream()
-                    .map(Image::getId)
-                    .collect(Collectors.toList());
-        } else {
-            imageRemove = imagesRepo.stream()
-                    .map(Image::getId)
-                    .filter(imageId -> !images.contains(imageId))
-                    .collect(Collectors.toList());
+        for (Image image : imagesRepo) {
+            if (urls == null) {
+                imageRemove = imagesRepo.stream().map(Image::getId).collect(Collectors.toList());
+            } else {
+                if (!urls.contains(image.getUrl())) {
+                    imageRemove.add(image.getId());
+                }
+            }
         }
 
         // Xóa ảnh khỏi Cloudinary
+        List<Long> finalImageRemove = imageRemove;
         imagesRepo.stream()
-                .filter(image -> imageRemove.contains(image.getId()))
+                .filter(image -> finalImageRemove.contains(image.getId()))
                 .forEach(image -> {
                     try {
                         deleteImageByPublicId(image.getUrl());
@@ -76,7 +74,6 @@ public class ImageService {
         // Xóa ảnh khỏi repository
         imageRepositoty.deleteAllById(imageRemove);
 
-        listImage.get(0).setState(Utils.StateImage.MAIN);
         listImage = imageRepositoty.saveAll(listImage);
         return listImage.stream()
                 .map(Image::toDTO)
@@ -88,7 +85,7 @@ public class ImageService {
         cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
     }
 
-    public List<ImageDTO> getAllByPostId( Long postId,Long uid) {
+    public List<ImageDTO> getAllByPostId(Long postId, Long uid) {
         List<Image> images = imageRepositoty.findAllByPostId(postId);
         return images.stream()
                 .map(Image::toDTO)

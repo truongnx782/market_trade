@@ -38,8 +38,9 @@ public class CategoryController {
         return ResponseEntity.ok(categoryRepository.getById(id, uid));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/admin/update/{id}")
-    public ResponseEntity<?> uodate(
+    public ResponseEntity<?> update(
             @PathVariable("id") Long id,
             @RequestHeader("uid") Long uid,
             @RequestParam("categoryName") String categoryName,
@@ -48,12 +49,14 @@ public class CategoryController {
         return ResponseEntity.ok(categoryRepository.update(id, categoryName, files, url, uid));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/admin/delete/{id}")
     public ResponseEntity<?> delete(@RequestHeader("uid") Long uid,
                                     @PathVariable("id") Long id) {
         return ResponseEntity.ok(categoryRepository.delete(id, uid));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/admin/restore/{id}")
     public ResponseEntity<?> restore(@RequestHeader("uid") Long uid,
                                     @PathVariable("id") Long id) {
@@ -80,7 +83,7 @@ public class CategoryController {
         return ResponseEntity.ok(categoryRepository.exportData(payload));
     }
 
-    @GetMapping("getAll")
+    @GetMapping("/getAll")
     public ResponseEntity<?> getAll() {
         return ResponseEntity.ok(categoryRepository.getAll());
     }

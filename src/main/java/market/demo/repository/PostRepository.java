@@ -40,11 +40,28 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                            Pageable pageable,
                            @Param("uid") Long uid);
 
+    @Query(value = "SELECT u FROM Post u WHERE " +
+            "(u.title LIKE %:search% OR u.description LIKE %:search% ) " +
+            "AND u.userId=:idUser " +
+            "AND u.status = 1 " +
+            "AND u.statusPost= 1 " +
+            "ORDER BY u.id DESC")
+    Page<Post> searchPostByIdUser(@Param("search") String search,
+                           Pageable pageable,
+                           @Param("idUser") Long idUser);
+
     @Query(value = "SELECT p FROM Post p WHERE " +
             "p.id = (SELECT MAX(p2.id) FROM Post p2 ) ")
     Optional<Post> findMaxId();
 
     List<Post> findTop20ByStatusAndStatusPostOrderByCreatedAtDesc(Integer ACTIVE, Integer active);
 
-    List<Post> findAllByUserId(Long userId);
-}
+    @Query(value = "SELECT u FROM Post u left join Follow f on u.userId=f.followingId where " +
+            "f.followerId=:uid " +
+            "and (u.title like %:search% or u.description like %:search% ) " +
+            "and u.status = 1 " +
+            "and u.statusPost= 1 " +
+            "order by u.id desc ")
+    Page<Post> getAllByFollowerId(@Param("search") String search,
+                                  Pageable pageable,
+                                  @Param("uid") Long uid);}
